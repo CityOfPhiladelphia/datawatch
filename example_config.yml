@@ -1,0 +1,12 @@
+ connections:
+  carto_public: $CARTO_PUBLIC_CONN_STRING
+  carto_private: $CARTO_CONN_STRING
+  geodb2_public: $GEODB2_PUBLIC_CONN_STRING
+ tables:
+  - name: carto_public_cases_fc
+    append_only: true
+    connection: carto_public
+    table: phl.public_cases_fc
+    test_query: select * from phl.public_cases_fc where status_notes = 'Issue Resolved' limit 100
+    source_connection: geodb2_public
+    source_table: GIS_311.PUBLIC_CASES_FC
