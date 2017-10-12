@@ -1,12 +1,23 @@
- connections:
+connections:
   carto_public: $CARTO_PUBLIC_CONN_STRING
   carto_private: $CARTO_CONN_STRING
   geodb2_public: $GEODB2_PUBLIC_CONN_STRING
- tables:
-  - name: carto_public_cases_fc
+alerts:
+  default: slack_warn
+  slack_critical:
+    type: slack
+    at_channel: true
+    slack_url: $SLACK_TEST_CHANNEL
+  slack_warn:
+    type: slack
+    slack_url: $SLACK_TEST_CHANNEL
+table_tests:
+  - test_name: carto_public_cases_fc
     append_only: true
     connection: carto_public
     table: phl.public_cases_fc
     test_query: select * from phl.public_cases_fc where status_notes = 'Issue Resolved' limit 100
     source_connection: geodb2_public
     source_table: GIS_311.PUBLIC_CASES_FC
+    alerts:
+      - slack_critical

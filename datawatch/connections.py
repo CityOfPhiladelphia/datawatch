@@ -2,9 +2,8 @@ from urllib.parse import urlparse
 import re
 import os
 
+from sqlalchemy import create_engine
 import requests
-
-carto_connection_string_regex = r'^carto://'
 
 connections = {}
 
@@ -19,6 +18,9 @@ def get_connection(config, name):
 
     if connection_string[0] == '$':
         connection_string = os.getenv(connection_string[1:])
+
+    if not connection_string:
+        raise Exception('Missing `{}` connection string'.format(name))
 
     if urlparse(connection_string).scheme == 'carto':
         connection = CartoConnection(connection_string)
@@ -62,13 +64,13 @@ class CartoConnection(Connection):
             else:
                 url = 'https://{}/api/v2/sql'.format(self.host)
 
-        qs = {}
+        params = {}
         if self.api_key:
-            qs['api_key'] = self.api_key
+            params['api_key'] = self.api_key
 
         response = self.session.post(
             url,
-            qs=qs,
+            params=params,
             data={
                 'q': query_str
             })
@@ -76,7 +78,8 @@ class CartoConnection(Connection):
         return response.json()['rows'], response.status_code
 
     def count(self, table_name):
-        return self.query('select count(*) from "{}"'.format(table_name))[0]['count']
+        rows, http_status = self.query('select count(*) from {}'.format(table_name))
+        return rows[0]['count']
 
     def close(self):
         self.session.close()
@@ -84,6 +87,7 @@ class CartoConnection(Connection):
 class SQLConnection(Connection):
     def __init__(self, connection_string):
         self.engine = create_engine(connection_string)
+        self.connection = None
 
     def query(self, query_str):
         if not self.connection:
@@ -94,7 +98,8 @@ class SQLConnection(Connection):
 
     def count(self, table_name):
         ## TODO: surround table_name with dialect specific encapsulation - ex ` "
-        return self.query('select count(*) as count from {}'.format(table_name))[0]['count']
+        rows, _ = self.query('select count(*) as count from {}'.format(table_name))
+        return rows[0]['count']
 
     def close(self):
         if self.connection:
