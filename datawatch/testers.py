@@ -57,6 +57,7 @@ def test_table(logger, session, config, table_config):
 
     ## start counts
 
+    count = None
     try:
         count = connection.count(table_config['table'])
     except:
@@ -65,6 +66,7 @@ def test_table(logger, session, config, table_config):
             error_status = 'count_error'
             error_message = 'Error counting table'
 
+    source_count = None
     try:
         source_connection = get_connection(config, table_config['source_connection'])
         source_count =  source_connection.count(table_config['source_table'])

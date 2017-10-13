@@ -61,7 +61,7 @@ class SlackAlerter(Alerter):
         self.slack_url = slack_url
         self.at_channel = at_channel
 
-    def get_message(self, table_config, data_test):
+    def get_datatest_message(self, table_config, data_test):
         attachments = [
             {
                 'color': '#ff0000',
@@ -127,12 +127,12 @@ class SlackAlerter(Alerter):
                 'fields': [
                     {
                         'title': 'Count',
-                        'value': '{:,}'.format(data_test.count),
+                        'value': '{:,}'.format(data_test.count) if data_test.count else 'Unavailable',
                         'short': True
                     },
                     {
                         'title': 'Source Count',
-                        'value': '{:,}'.format(data_test.source_count),
+                        'value': '{:,}'.format(data_test.source_count) if data_test.source_count else 'Unavailable',
                         'short': True
                     }
                 ]
@@ -141,7 +141,7 @@ class SlackAlerter(Alerter):
             if table_config['append_only']:
                 count_attachment['fields'].append({
                     'title': 'Last Count (Append Only)',
-                    'value': '{:,}'.format(data_test.last_count),
+                    'value': '{:,}'.format(data_test.last_count) if data_test.last_count else 'Unavailable',
                     'short': True
                 })
 
@@ -156,8 +156,20 @@ class SlackAlerter(Alerter):
             'attachments': attachments
         }
 
+    def get_failed_test_message(self, table_config):
+        at_channel_str = ''
+        if self.at_channel:
+            at_channel_str = '<!channel> '
+
+        return {
+            'text': '{}DataWatch Test Failure - *Unable to test* - *{}*'.format(at_channel_str, table_config['test_name'])
+        }
+
     def alert(self, table_config, data_test):
-        message = self.get_message(table_config, data_test)
+        if data_test == None:
+            message = self.get_failed_test_message(table_config)
+        else:
+            message = self.get_datatest_message(table_config, data_test)
         requests.post(
             self.slack_url,
             data=json.dumps(message),

@@ -16,6 +16,10 @@ from .testers import test_table
 from .connections import close_connections
 from .alerts import Alerts
 
+MAX_ERRORS = 5
+
+num_errors = 0
+
 def get_logger():
     FORMAT = '[%(asctime)-15s] %(levelname)s [%(name)s] %(message)s'
     logging.basicConfig(format=FORMAT, level=logging.INFO)
@@ -48,14 +52,25 @@ def get_alerts(logger, config, use_alerts):
     return alerts_instance
 
 def run_test(logger, session, config, table_config, alerts):
+    global num_errors
+
     data_test = None
 
     try:
         data_test = test_table(logger, session, config, table_config)
     except:
         logger.exception('Error testing table', table_config['test_name'])
-        ## TODO: trigger alert
-        ## TODO: if more than say 5 trigger alerts, kill the process and trigger alert
+        if alerts:
+            alerts.alert(table_config, None)
+
+        num_errors += 1
+        if num_errors >= MAX_ERRORS:
+            logger.error('Encountered too many errors ({})'.format(num_errors))
+            try:
+                close_connections()
+            except:
+                pass
+            sys.exit(1)
 
     if data_test and data_test.error_status:
         if alerts:
