@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from .connections import get_connection
-from .models import DataTest, RowCount
+from .models import DataTest
 
 def get_test_error(exception):
     if isinstance(exception, requests_exceptions.ConnectionError):
@@ -83,13 +83,12 @@ def test_table(logger, session, config, table_config):
 
     last_count = None
     if table_config['append_only']:
-        row_count = session.query(RowCount.count)\
-            .filter(RowCount.test_name == table_config['test_name'],
-                    RowCount.table == table_config['table'])\
-            .order_by(RowCount.timestamp.desc())\
+        last_data_test = session.query(DataTest.count)\
+            .filter(DataTest.test_name == table_config['test_name'])\
+            .order_by(DataTest.timestamp.desc())\
             .first()
-        if row_count:
-            last_count = row_count.count
+        if last_data_test:
+            last_count = last_data_test.count
 
     if not error_status and last_count != None and count < last_count:
         error_status = 'count_error'
@@ -98,6 +97,7 @@ def test_table(logger, session, config, table_config):
 
     data_test = DataTest(
         test_name=table_config['test_name'],
+        timestamp=start,
         error_status=error_status,
         error_message=error_message,
         query_started_at=start,
@@ -110,16 +110,6 @@ def test_table(logger, session, config, table_config):
         source_count=source_count,
         last_count=last_count)
     session.add(data_test)
-    session.flush()
-
-    new_row_count = RowCount(
-        source_data_test_id=data_test.id,
-        test_name=table_config['test_name'],
-        table=table_config['table'],
-        timestamp=datetime.utcnow(),
-        count=count)
-    session.add(new_row_count)
-
     session.commit()
 
     return data_test

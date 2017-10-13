@@ -18,7 +18,8 @@ class DataTest(BaseModel):
     __tablename__ = 'data_tests'
 
     id = Column(BigInteger, primary_key=True)
-    test_name = Column(String, nullable=False)
+    test_name = Column(String, nullable=False, index=True)
+    timestamp = Column(DateTime, nullable=False, index=True)
     error_status = Column(String)
     error_message = Column(String)
     query_started_at = Column(DateTime, nullable=False)
@@ -30,15 +31,3 @@ class DataTest(BaseModel):
     count = Column(BigInteger)
     source_count = Column(BigInteger)
     last_count = Column(BigInteger)
-
-## TODO: RowCount is unnessary, you could just use the last DataTest count
-
-class RowCount(BaseModel):
-    __tablename__ = 'row_counts'
-
-    id = Column(BigInteger, primary_key=True)
-    source_data_test_id = Column(BigInteger, ForeignKey('data_tests.id'), nullable=False)
-    test_name = Column(String, nullable=False, index=True)
-    table = Column(String, nullable=False, index=True)
-    timestamp = Column(DateTime, nullable=False, index=True)
-    count = Column(BigInteger, nullable=False)
