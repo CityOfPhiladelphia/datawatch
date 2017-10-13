@@ -31,6 +31,8 @@ class DataTest(BaseModel):
     source_count = Column(BigInteger)
     last_count = Column(BigInteger)
 
+## TODO: RowCount is unnessary, you could just use the last DataTest count
+
 class RowCount(BaseModel):
     __tablename__ = 'row_counts'
 

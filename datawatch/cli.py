@@ -67,14 +67,14 @@ def run_test(logger, session, config, table_config, alerts):
 def main():
     pass
 
-@main.command('init-db')
+@main.command('init-db', help='Initialize the DataWatch database')
 @click.option('--sql-alchemy-connection')
 def init_db(sql_alchemy_connection):
     engine = get_db_engine(sql_alchemy_connection)
 
     BaseModel.metadata.create_all(engine)
 
-@main.command('run-test')
+@main.command('run-test', help='Run a specific test by test name in a config file')
 @click.argument('TEST_NAME')
 @click.argument('CONFIG_PATH', type=click.Path(exists=True))
 @click.option('--sql-alchemy-connection')
@@ -107,7 +107,7 @@ def run_single_test(test_name, config_path, sql_alchemy_connection, alerts):
     if not success:
         sys.exit(1)
 
-@main.command('run-all')
+@main.command('run-all', help='Run all tests in a config file')
 @click.argument('CONFIG_PATH', type=click.Path(exists=True))
 @click.option('--sql-alchemy-connection')
 @click.option('--alerts/--no-alerts', is_flag=True, default=False)

@@ -152,7 +152,7 @@ class SlackAlerter(Alerter):
             at_channel_str = '<!channel> '
 
         return {
-            'text': '{}DataWatch Test Failure - {}'.format(at_channel_str, table_config['test_name']),
+            'text': '{}DataWatch Test Failure - *{}*'.format(at_channel_str, table_config['test_name']),
             'attachments': attachments
         }
 
