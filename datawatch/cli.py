@@ -43,12 +43,12 @@ def get_config(config_path):
     with open(config_path) as file:
         return yaml.load(file)
 
-def get_alerts(logger, config, use_alerts):
+def get_alerts(logger, config, use_alerts, session):
     alerts_instance = None
     if use_alerts:
         if 'alerts' not in config:
             raise Exception('`alerts` not found in config')
-        alerts_instance = Alerts(logger, config['alerts'])
+        alerts_instance = Alerts(logger, config['alerts'], session=session)
     return alerts_instance
 
 def run_test(logger, session, config, table_config, alerts):
@@ -104,7 +104,7 @@ def run_single_test(test_name, config_path, sql_alchemy_connection, alerts):
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    alerts_instance = get_alerts(logger, config, alerts)
+    alerts_instance = get_alerts(logger, config, alerts, session)
 
     target_table_config = None
     for table_config in config['table_tests']:
@@ -136,7 +136,7 @@ def run_all(config_path, sql_alchemy_connection, alerts):
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    alerts_instance = get_alerts(logger, config, alerts)
+    alerts_instance = get_alerts(logger, config, alerts, session)
 
     for table_config in config['table_tests']:
         run_test(logger, session, config, table_config, alerts_instance)
