@@ -48,7 +48,7 @@ class Alert(BaseModel):
     data_test_id = Column(BigInteger, ForeignKey('data_tests.id'))
     alert_hash = Column(String, nullable=False)
 
-    ## TODO: unique indeex across all fields but id?
+    ## TODO: unique index across all fields but id?
 
     def __repr__(self, *args, **kwargs):
         return '<Alert id: {} data_test_id: {} timestamp: {} test_name: {} >'.format(
